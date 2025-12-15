@@ -36,5 +36,34 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
 
     timer_ = this->create_wall_timer(
         std::chrono::seconds(1), std::bind(&FractalTerrainPublisher::timer_callback, this));
+}
 
+FractalTerrain::~FractalTerrain()
+{
+  std::cout << "FractalTerrain class is destructed." << std::endl;
+}
+
+
+std::vector<double> FractalTerrain::linspace(double start, double end, int num)
+{
+  std::vector<double> vec;
+  if (num <= 0) {
+    return vec;
+  }
+
+  if (num == 1) {
+    vec.push_back(start);
+    return vec;
+  }
+
+  double step = (end - start) / (num - 1);
+  for (int i = 0; i < num; ++i) {
+    vec.push_back(start + (static_cast<double>(i) * step));
+  }
+  return vec;
+}
+
+cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float target_std)
+{
+  
 }
