@@ -3,14 +3,15 @@
 <package format="3">
   <name>fractal_terrain</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>This package is to generate virtual terrain by fractal</description>
   <maintainer email="matsuura.yudai.q5@dc.tohoku.ac.jp">go2laptop</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>opencv</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

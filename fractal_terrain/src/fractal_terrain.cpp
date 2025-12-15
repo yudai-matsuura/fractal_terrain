@@ -22,7 +22,7 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     csv_filename_ = this->get_parameter("csv_filename").as_string();
 
     // Publisher
-    pub_terrain_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("virtual_terrain", 10);
+    virtual_terrain_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("virtual_terrain", 10);
 
     RCLCPP_INFO(this->get_logger(), "Generating Fractal Terrain (Omega: %.1f, STD: %.4f)...", omega, target_std);
     terrain_base_ = generateFractalTerrain(base_grid_size, static_cast<float>(omega), static_cast<float>(target_std));
@@ -35,7 +35,7 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     RCLCPP_INFO(this->get_logger(), "Terrain saved to %s", csv_filename_.c_str());
 
     timer_ = this->create_wall_timer(
-        std::chrono::seconds(1), std::bind(&FractalTerrainPublisher::timer_callback, this));
+        std::chrono::seconds(1), std::bind(&FractalTerrainPublisher::timerCallback, this));
 }
 
 FractalTerrain::~FractalTerrain()
@@ -65,5 +65,38 @@ std::vector<double> FractalTerrain::linspace(double start, double end, int num)
 
 cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float target_std)
 {
-  
+  // Add fractal terrain generation code
+}
+
+void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
+  const std::string & filename)
+{
+  int num_x = terrain.cols;
+  int num_y = terrain.rows;
+  double dx = (max_x - min_x) / (num_x - 1);
+  double dy = (max_y - min_y) / (num_y - 1);
+
+  std::ofstream ofs(filename);
+  ofs << "x,y,z\n";
+
+  for (int j = 0; j < num_y; j++) {
+    for (int i = 0; i < num_x; i++) {
+      float z = terrain.at<float>(j, i);
+      double x = min_x + i * dx;
+      double y = min_y + j * dy;
+      ofs << x << "," << y << "," << z << "\n";
+    }
+  }
+  ofs.close();
+}
+
+void FractalTerrain::timerCallback()
+{
+  auto msg = createPointCloudMsg(terrain_base_);
+  virtual_terrain_pub_->publish(msg);
+}
+
+sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv:Mat & base_terrain)
+{
+  // Add cloud generation code
 }
