@@ -85,8 +85,8 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
   // Amplitude redistribution for all frequency components based on fractal law
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
-      int i = (x <= cx) ? x : x - size;
-      int i = (y <= cy) ? x : y - size;
+      int i = (x <= center_x) ? x : x - size;
+      int i = (y <= center_y) ? x : y - size;
       float freq = std::sqrt(static_cast<float>(i * i + j * j));
       float scale = (freq > 0.0f) ? std::pow(freq, omega / 2.0f) : 0.0f; // Amplitude is the square root of the power
       dft_planes[0].at<float>(y, x) *= scale;
@@ -98,17 +98,17 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
     cv::merge(dft_planes, 2, complex_img);
     cv::dft(complex_img, complex_img, cv::DFT_INVERSE | cv::DFT_SCALE);
     cv::split(complex_img, dft_planes);
-    cv::Mat terrain = dft_planes[0]; // Height map in real space
+    cv::Mat fractal_terrain = dft_planes[0]; // Height map in real space
 
     // Standard deviation adjustment
     cv::Scalar mean, stddev;
-    cv::meanStdDev(terrain, mean, stddev);
+    cv::meanStdDev(fractal_terrain, mean, stddev);
     float current_std = static_cast<float>(stddev[0]);
     float current_mean = static_cast<float>(mean[0]);
     if (current_std > 1e-6) {
-      terrain = (terrain - current_mean) * (target_std / current_std);
+      fractal_terrain = (fractal_terrain - current_mean) * (target_std / current_std);
     }
-    return terrain;
+    return fractal_terrain;
   }
 
 void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
@@ -141,5 +141,67 @@ void FractalTerrain::timerCallback()
 
 sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv:Mat & base_terrain)
 {
-  // Add cloud generation code
+  double min_x = this->get_parameter("min_x").as_double();
+  double max_x = this->get_parameter("max_x").as_double();
+  double min_y = this->get_parameter("min_y").as_double();
+  double max_y = this->get_parameter("max_y").as_double();
+  double resolution = this->get_parameter("resolution").as_double();
+  std::string frame_id = this->get_parameter("frame_id").as_string();
+
+  // Calculate the number of grid points
+  int num_x = static_cast<int>(max_x - min_x) / resolution + 1;
+  int num_y = static_cast<int>(max_y - min_y) / resolution + 1;
+
+  if (num_x <= 0 || num_y <= 0) {
+    return sensor_msgs::msg::PointCloud2();
+  }
+
+  std::vector<double> x_vec = linspace(min_x, max_x, num_x);
+  std::vector<double> y_vec = linspace(min_y, max_y, num_y);
+
+  //Resize fractal terrain
+  cv::Mat resized_terrain;
+  cv::resize(base_terrain, resized_terrain, cv::Size(num_x, num_y), 0, 0, cv::INTER_LINEAR);
+
+  // Initialize point cloud message
+  sensor_msgs::msg::PointCloud2 msg;
+  msg.header.stamp = this->now();
+  msg.header.frame_id = frame_id;
+  msg.height = 1;
+  msg.width = num_x * num_y;
+  msg.is_dense = true;
+  msg.is_bigendian = false;
+
+  // Field setting
+  msg.fields.resize(3);
+  msg.fields[0].name = "x";
+  msg.fields[0].offset = 0;
+  msg.fields[0].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  msg.fields[0].count = 1;
+  msg.fields[1].name = "y";
+  msg.fields[1].offset = 4;
+  msg.fields[1].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  msg.fields[1].count = 1;
+  msg.fields[2].name = "z";
+  msg.fields[2].offset = 8;
+  msg.fields[2].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  msg.fields[2].count = 1;
+  msg.point_step = 12;
+  msg.row_step = msg.point_step * msg.width;
+  msg.data.resize(msg.row_step);
+
+  // Create point cloud
+  uint8_t * ptr = msg.data.data();
+  for (int i = 0; i < num_y; ++i) {
+    for (int j = 0; j < num_x; ++j) {
+      float z = resized_terrain.at<float>(i, j);
+      PointXYZ p;
+      p.x = static_cast<float>(x_vec[j]);
+      p.y = static_cast<float>(x_vec[i]);
+      p.z = z;
+      std::memcpy(ptr, &p, sizeof(PointXYZ));
+      ptr += sizeof(pointXYZ);
+    }
+  }
+return msg;
 }
