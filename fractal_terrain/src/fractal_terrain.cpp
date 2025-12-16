@@ -9,10 +9,10 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     this->declare_parameter<double>("min_y", 0.7);
     this->declare_parameter<double>("max_y", 1.4);
     this->declare_parameter<double>("resolution", 0.005);
-    this->declare_parameter<std::string>("frame_id", "tcp_base");
+    this->declare_parameter<std::string>("frame_id", "base_link");
     this->declare_parameter<int>("base_grid_size", 128);
     this->declare_parameter<double>("target_std", 0.02);  // target Stdev
-    this->declare_parameter<double>("fractal_omega", -3.0);
+    this->declare_parameter<double>("fractal_omega", -4.0);
     this->declare_parameter<std::string>("csv_filename", "fractal_terrain.csv");
 
     // Get parameter
@@ -86,7 +86,7 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       int i = (x <= center_x) ? x : x - size;
-      int j = (y <= center_y) ? x : y - size;
+      int j = (y <= center_y) ? y : y - size;
       float freq = std::sqrt(static_cast<float>(i * i + j * j));
       float scale = (freq > 0.0f) ? std::pow(freq, omega / 2.0f) : 0.0f; // Amplitude is the square root of the power
       dft_planes[0].at<float>(y, x) *= scale;
@@ -149,8 +149,8 @@ sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat 
   std::string frame_id = this->get_parameter("frame_id").as_string();
 
   // Calculate the number of grid points
-  int num_x = static_cast<int>(max_x - min_x) / resolution + 1;
-  int num_y = static_cast<int>(max_y - min_y) / resolution + 1;
+  int num_x = static_cast<int>((max_x - min_x) / resolution) + 1;
+  int num_y = static_cast<int>((max_y - min_y) / resolution) + 1;
 
   if (num_x <= 0 || num_y <= 0) {
     return sensor_msgs::msg::PointCloud2();
