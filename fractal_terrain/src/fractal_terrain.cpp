@@ -35,7 +35,7 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     RCLCPP_INFO(this->get_logger(), "Terrain saved to %s", csv_filename_.c_str());
 
     timer_ = this->create_wall_timer(
-        std::chrono::seconds(1), std::bind(&FractalTerrainPublisher::timerCallback, this));
+        std::chrono::seconds(1), std::bind(&FractalTerrain::timerCallback, this));
 }
 
 FractalTerrain::~FractalTerrain()
@@ -66,7 +66,7 @@ std::vector<double> FractalTerrain::linspace(double start, double end, int num)
 cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float target_std)
 {
   // random noise
-  cv:Mat noise(size, size, CV_32F);
+  cv::Mat noise(size, size, CV_32F);
   cv::randn(noise, 0.0f, 1.0f);
 
   // Create complex image
@@ -86,7 +86,7 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       int i = (x <= center_x) ? x : x - size;
-      int i = (y <= center_y) ? x : y - size;
+      int j = (y <= center_y) ? x : y - size;
       float freq = std::sqrt(static_cast<float>(i * i + j * j));
       float scale = (freq > 0.0f) ? std::pow(freq, omega / 2.0f) : 0.0f; // Amplitude is the square root of the power
       dft_planes[0].at<float>(y, x) *= scale;
@@ -139,7 +139,7 @@ void FractalTerrain::timerCallback()
   virtual_terrain_pub_->publish(msg);
 }
 
-sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv:Mat & base_terrain)
+sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat & base_terrain)
 {
   double min_x = this->get_parameter("min_x").as_double();
   double max_x = this->get_parameter("max_x").as_double();
@@ -197,10 +197,10 @@ sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv:Mat &
       float z = resized_terrain.at<float>(i, j);
       PointXYZ p;
       p.x = static_cast<float>(x_vec[j]);
-      p.y = static_cast<float>(x_vec[i]);
+      p.y = static_cast<float>(y_vec[i]);
       p.z = z;
       std::memcpy(ptr, &p, sizeof(PointXYZ));
-      ptr += sizeof(pointXYZ);
+      ptr += sizeof(PointXYZ);
     }
   }
 return msg;

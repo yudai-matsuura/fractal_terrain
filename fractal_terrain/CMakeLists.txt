@@ -8,7 +8,31 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
+
+# Include directory
+include_directories(
+  include
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+# Executable files
+add_executable(fractal_terrain
+  src/fractal_terrain_node.cpp
+  src/fractal_terrain.cpp
+)
+
+# Dependencies
+ament_target_dependencies(fractal_terrain
+  rclcpp
+  sensor_msgs
+  OpenCV
+)
+
+# Install settings
+install(TARGETS fractal_terrain
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
