@@ -65,8 +65,51 @@ std::vector<double> FractalTerrain::linspace(double start, double end, int num)
 
 cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float target_std)
 {
-  // Add fractal terrain generation code
-}
+  // random noise
+  cv:Mat noise(size, size, CV_32F);
+  cv::randn(noise, 0.0f, 1.0f);
+
+  // Create complex image
+  cv::Mat dft_planes[] = {noise, cv::Mat::zeros(noise.size(), CV_32F)}; // A complex number with an imaginary part of 0
+  cv::Mat complex_img;
+  cv::merge(dft_planes, 2, complex_img);
+
+  // Discrete Fourier Transform
+  cv::dft(complex_img, complex_img);
+
+  // Separate to real part and imaginary part
+  cv::split(complex_img, dft_planes);
+  int center_x = size / 2;
+  int center_y = size / 2;
+
+  // Amplitude redistribution for all frequency components based on fractal law
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      int i = (x <= cx) ? x : x - size;
+      int i = (y <= cy) ? x : y - size;
+      float freq = std::sqrt(static_cast<float>(i * i + j * j));
+      float scale = (freq > 0.0f) ? std::pow(freq, omega / 2.0f) : 0.0f; // Amplitude is the square root of the power
+      dft_planes[0].at<float>(y, x) *= scale;
+      dft_planes[1].at<float>(y, x) *= scale;
+    }
+  }
+
+    // Inverse Fourier Transform
+    cv::merge(dft_planes, 2, complex_img);
+    cv::dft(complex_img, complex_img, cv::DFT_INVERSE | cv::DFT_SCALE);
+    cv::split(complex_img, dft_planes);
+    cv::Mat terrain = dft_planes[0]; // Height map in real space
+
+    // Standard deviation adjustment
+    cv::Scalar mean, stddev;
+    cv::meanStdDev(terrain, mean, stddev);
+    float current_std = static_cast<float>(stddev[0]);
+    float current_mean = static_cast<float>(mean[0]);
+    if (current_std > 1e-6) {
+      terrain = (terrain - current_mean) * (target_std / current_std);
+    }
+    return terrain;
+  }
 
 void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
   const std::string & filename)
