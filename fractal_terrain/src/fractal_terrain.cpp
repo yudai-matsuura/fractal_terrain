@@ -44,6 +44,12 @@ FractalTerrain::~FractalTerrain()
 }
 
 
+void FractalTerrain::timerCallback()
+{
+  auto msg = createPointCloudMsg(terrain_base_);
+  virtual_terrain_pub_->publish(msg);
+}
+
 std::vector<double> FractalTerrain::linspace(double start, double end, int num)
 {
   std::vector<double> vec;
@@ -111,34 +117,6 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
     return fractal_terrain;
   }
 
-void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
-  const std::string & filename)
-{
-  int num_x = terrain.cols;
-  int num_y = terrain.rows;
-  double dx = (max_x - min_x) / (num_x - 1);
-  double dy = (max_y - min_y) / (num_y - 1);
-
-  std::ofstream ofs(filename);
-  ofs << "x,y,z\n";
-
-  for (int j = 0; j < num_y; j++) {
-    for (int i = 0; i < num_x; i++) {
-      float z = terrain.at<float>(j, i);
-      double x = min_x + i * dx;
-      double y = min_y + j * dy;
-      ofs << x << "," << y << "," << z << "\n";
-    }
-  }
-  ofs.close();
-}
-
-void FractalTerrain::timerCallback()
-{
-  auto msg = createPointCloudMsg(terrain_base_);
-  virtual_terrain_pub_->publish(msg);
-}
-
 sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat & base_terrain)
 {
   double min_x = this->get_parameter("min_x").as_double();
@@ -203,5 +181,28 @@ sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat 
       ptr += sizeof(PointXYZ);
     }
   }
+
 return msg;
+}
+
+void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
+  const std::string & filename)
+{
+  int num_x = terrain.cols;
+  int num_y = terrain.rows;
+  double dx = (max_x - min_x) / (num_x - 1);
+  double dy = (max_y - min_y) / (num_y - 1);
+
+  std::ofstream ofs(filename);
+  ofs << "x,y,z\n";
+
+  for (int j = 0; j < num_y; j++) {
+    for (int i = 0; i < num_x; i++) {
+      float z = terrain.at<float>(j, i);
+      double x = min_x + i * dx;
+      double y = min_y + j * dy;
+      ofs << x << "," << y << "," << z << "\n";
+    }
+  }
+  ofs.close();
 }

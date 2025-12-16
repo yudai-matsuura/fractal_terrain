@@ -23,7 +23,7 @@ public:
 
 private:
   /**
-   * @brief
+   * @brief This function generate evenly spaced numeric vectors.
    *
    * @param start
    * @param end
@@ -32,7 +32,7 @@ private:
     std::vector<double> linspace(double start, double end, int num);
 
 	/**
-   * @brief
+   * @brief This function create virtual terrain using fractal law.
    *
    * @param size
    * @param omega
@@ -41,7 +41,7 @@ private:
 	cv::Mat generateFractalTerrain(int size, float omega, float target_std);
 
 	/**
-   * @brief
+   * @brief This function save fractal terrain data to csv file.
    *
    * @param terrain
    * @param min_x
@@ -60,7 +60,7 @@ private:
 	void timerCallback();
 
 	/**
-   * @brief
+   * @brief This function create point cloud message from fractal terrain data.
    *
    * @param base_terrain
    */
