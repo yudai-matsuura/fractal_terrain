@@ -3,7 +3,7 @@
 FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
 : rclcpp::Node("fractal_terrain", options)
 {
-    // Parameter
+    // Default parameters
     this->declare_parameter<double>("min_x", 2.4);
     this->declare_parameter<double>("max_x", 3.1);
     this->declare_parameter<double>("min_y", 0.7);
@@ -11,7 +11,7 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     this->declare_parameter<double>("resolution", 0.005);
     this->declare_parameter<std::string>("frame_id", "base_link");
     this->declare_parameter<int>("base_grid_size", 128);
-    this->declare_parameter<double>("target_std", 0.02);  // target Stdev
+    this->declare_parameter<double>("target_std", 0.02);
     this->declare_parameter<double>("fractal_omega", -4.0);
     this->declare_parameter<std::string>("csv_filename", "fractal_terrain.csv");
 
@@ -27,7 +27,7 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     RCLCPP_INFO(this->get_logger(), "Generating Fractal Terrain (Omega: %.1f, STD: %.4f)...", omega, target_std);
     terrain_base_ = generateFractalTerrain(base_grid_size, static_cast<float>(omega), static_cast<float>(target_std));
 
-    // Save terrain sa CSV
+    // Save terrain as CSV
     saveTerrainAsCSV(
         terrain_base_, this->get_parameter("min_x").as_double(),
         this->get_parameter("min_y").as_double(), this->get_parameter("max_x").as_double(),

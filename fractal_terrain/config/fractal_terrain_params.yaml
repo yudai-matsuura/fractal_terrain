@@ -1,0 +1,12 @@
+fractal_terrain:
+  ros__parameters:
+    min_x: 2.4
+    max_x: 3.1
+    min_y: 0.7
+    max_y: 1.4
+    resolution: 0.005
+    frame_id: "base_link"
+    base_grid_size: 128
+    target_std: 0.02
+    fractal_omega: -2.0
+    csv_filename: "fractal_terrain.csv"
