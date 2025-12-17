@@ -5,8 +5,8 @@ fractal_terrain:
     min_y: 0.7
     max_y: 1.4
     resolution: 0.005
-    frame_id: "base_link"
+    frame_id: "tcp_base"
     base_grid_size: 128
     target_std: 0.02
-    fractal_omega: -2.5
+    fractal_omega: -4.0
     csv_filename: "fractal_terrain.csv"
