@@ -119,6 +119,7 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
 
 sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat & base_terrain)
 {
+  // Get parameters
   double min_x = this->get_parameter("min_x").as_double();
   double max_x = this->get_parameter("max_x").as_double();
   double min_y = this->get_parameter("min_y").as_double();

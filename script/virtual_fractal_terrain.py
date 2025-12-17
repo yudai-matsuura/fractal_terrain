@@ -62,7 +62,7 @@ def plot_terrain_from_csv(csv_file, save_filename="terran_from_csv.png"):
 
     # save and display
     plt.savefig(save_filename, dpi=300)
-    print(f"画像として保存しました: {save_filename}")
+    print(f"Saved image: {save_filename}")
     plt.show()
 
 
