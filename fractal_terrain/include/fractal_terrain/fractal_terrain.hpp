@@ -54,6 +54,16 @@ private:
 	const std::string & filename);
 
 	/**
+   * @brief This function save terrain STL file.
+   *
+   * @param terrain
+   * @param dx
+   * @param dy
+   * @param filename
+   */
+   void saveMeshAsSTL(const cv::Mat &terrain, double dx, double dy, const std::string &filename);
+
+	/**
    * @brief
    *
    */

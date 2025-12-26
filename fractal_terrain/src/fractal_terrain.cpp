@@ -34,6 +34,13 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
         this->get_parameter("max_y").as_double(), csv_filename_);
     RCLCPP_INFO(this->get_logger(), "Terrain saved to %s", csv_filename_.c_str());
 
+    // STL
+    double dx = 0.0005; // x resolution [m]
+    double dy = 0.0005; // y resolution [m]
+    std::string filename = "fractal_terrain.stl";
+    saveMeshAsSTL(terrain_base_, dx, dy, filename);
+    RCLCPP_INFO(this->get_logger(), "Mesh saved to %s", filename.c_str());
+
     timer_ = this->create_wall_timer(
         std::chrono::seconds(1), std::bind(&FractalTerrain::timerCallback, this));
 }
@@ -115,7 +122,7 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
       fractal_terrain = (fractal_terrain - current_mean) * (target_std / current_std);
     }
     return fractal_terrain;
-  }
+}
 
 sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat & base_terrain)
 {
@@ -185,6 +192,45 @@ sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat 
 
 return msg;
 }
+
+void FractalTerrain::saveMeshAsSTL(const cv::Mat &terrain, double dx, double dy, const std::string &filename)
+{
+    std::ofstream ofs(filename);
+    ofs << "solid terrain\n";
+
+    int rows = terrain.rows;
+    int cols = terrain.cols;
+
+    auto writeTriangle = [&](cv::Point3d v0, cv::Point3d v1, cv::Point3d v2) {
+        cv::Point3d normal = (v1 - v0).cross(v2 - v0);
+        double norm = cv::norm(normal);
+        if (norm > 1e-8) normal /= norm;
+        ofs << "  facet normal " << normal.x << " " << normal.y << " " << normal.z << "\n";
+        ofs << "    outer loop\n";
+        ofs << "      vertex " << v0.x << " " << v0.y << " " << v0.z << "\n";
+        ofs << "      vertex " << v1.x << " " << v1.y << " " << v1.z << "\n";
+        ofs << "      vertex " << v2.x << " " << v2.y << " " << v2.z << "\n";
+        ofs << "    endloop\n";
+        ofs << "  endfacet\n";
+    };
+
+    for (int i = 0; i < rows-1; ++i) {
+        for (int j = 0; j < cols-1; ++j) {
+            cv::Point3d v00(j*dx, i*dy, terrain.at<float>(i,j));
+            cv::Point3d v10((j+1)*dx, i*dy, terrain.at<float>(i+1,j));
+            cv::Point3d v01(j*dx, (i+1)*dy, terrain.at<float>(i,j+1));
+            cv::Point3d v11((j+1)*dx, (i+1)*dy, terrain.at<float>(i+1,j+1));
+
+            // 2 triangles per cell
+            writeTriangle(v00, v10, v01);
+            writeTriangle(v10, v11, v01);
+        }
+    }
+
+    ofs << "endsolid terrain\n";
+    ofs.close();
+}
+
 
 void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
   const std::string & filename)
