@@ -121,6 +121,13 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
     if (current_std > 1e-6) {
       fractal_terrain = (fractal_terrain - current_mean) * (target_std / current_std);
     }
+
+    // Check ln(E) value
+    cv::Mat sq = fractal_terrain.mul(fractal_terrain);
+    double energy_spatial = cv::sum(sq)[0];
+    double log_energy_spatial = std::log(energy_spatial + 1e-12);
+    std::cout << "energy_spatial = " << log_energy_spatial << std::endl;
+
     return fractal_terrain;
 }
 

@@ -8,5 +8,5 @@ fractal_terrain:
     frame_id: "tcp_base"
     base_grid_size: 128
     target_std: 0.02
-    fractal_omega: -4.0
+    fractal_omega: -4.5
     csv_filename: "fractal_terrain.csv"
