@@ -208,29 +208,15 @@ void FractalTerrain::saveMeshAsSTL(const cv::Mat &terrain, double dx, double dy,
     int rows = terrain.rows;
     int cols = terrain.cols;
 
-    auto writeTriangle = [&](cv::Point3d v0, cv::Point3d v1, cv::Point3d v2) {
-        cv::Point3d normal = (v1 - v0).cross(v2 - v0);
-        double norm = cv::norm(normal);
-        if (norm > 1e-8) normal /= norm;
-        ofs << "  facet normal " << normal.x << " " << normal.y << " " << normal.z << "\n";
-        ofs << "    outer loop\n";
-        ofs << "      vertex " << v0.x << " " << v0.y << " " << v0.z << "\n";
-        ofs << "      vertex " << v1.x << " " << v1.y << " " << v1.z << "\n";
-        ofs << "      vertex " << v2.x << " " << v2.y << " " << v2.z << "\n";
-        ofs << "    endloop\n";
-        ofs << "  endfacet\n";
-    };
-
     for (int i = 0; i < rows-1; ++i) {
         for (int j = 0; j < cols-1; ++j) {
-            cv::Point3d v00(j*dx, i*dy, terrain.at<float>(i,j));
-            cv::Point3d v10((j+1)*dx, i*dy, terrain.at<float>(i+1,j));
-            cv::Point3d v01(j*dx, (i+1)*dy, terrain.at<float>(i,j+1));
-            cv::Point3d v11((j+1)*dx, (i+1)*dy, terrain.at<float>(i+1,j+1));
+          cv::Point3d topLeft(j*dx, i*dy, terrain.at<float>(i,j));
+          cv::Point3d topRight((j+1)*dx, i*dy, terrain.at<float>(i,j+1));
+          cv::Point3d bottomLeft(j*dx, (i+1)*dy, terrain.at<float>(i+1,j));
+          cv::Point3d bottomRight((j+1)*dx, (i+1)*dy, terrain.at<float>(i+1,j+1));
 
-            // 2 triangles per cell
-            writeTriangle(v00, v10, v01);
-            writeTriangle(v10, v11, v01);
+          writeTriangle(ofs, topLeft, bottomLeft, topRight);
+          writeTriangle(ofs, bottomLeft, bottomRight, topRight);
         }
     }
 
@@ -238,6 +224,23 @@ void FractalTerrain::saveMeshAsSTL(const cv::Mat &terrain, double dx, double dy,
     ofs.close();
 }
 
+void FractalTerrain::writeTriangle(std::ofstream &ofs, const cv::Point3d &v0, const cv::Point3d &v1, const cv::Point3d &v2)
+{
+  cv::Point3d normal = (v1 - v0).cross(v2 - v0);
+  constexpr double kEpsilon = 1e-8;
+  double norm = cv::norm(normal);
+  if (norm > kEpsilon) {
+    normal /= norm;
+  }
+
+  ofs << "  facet normal " << normal.x << " " << normal.y << " " << normal.z << "\n";
+  ofs << "    outer loop\n";
+  ofs << "      vertex " << v0.x << " " << v0.y << " " << v0.z << "\n";
+  ofs << "      vertex " << v1.x << " " << v1.y << " " << v1.z << "\n";
+  ofs << "      vertex " << v2.x << " " << v2.y << " " << v2.z << "\n";
+  ofs << "    endloop\n";
+  ofs << "  endfacet\n";
+}
 
 void FractalTerrain::saveTerrainAsCSV(const cv::Mat & terrain, double min_x, double min_y, double max_x, double max_y,
   const std::string & filename)

@@ -64,6 +64,16 @@ private:
    void saveMeshAsSTL(const cv::Mat &terrain, double dx, double dy, const std::string &filename);
 
 	/**
+   * @brief This function create triangle to create mesh
+   *
+   * @param ofs
+   * @param v0
+   * @param v1
+   * @param v2
+   */
+   void writeTriangle(std::ofstream &ofs, const cv::Point3d &v0, const cv::Point3d &v1, const cv::Point3d &v2);
+
+	/**
    * @brief
    *
    */
