@@ -31,16 +31,19 @@ def plot_terrain_from_csv(csv_file, save_filename="terran_from_csv.png"):
     ax.plot_wireframe(X, Y, Z, color='black', linewidth=0.5, alpha=0.3)
 
     # axis label
-    ax.set_xlabel('X (m)', fontsize=18, labelpad=15)
-    ax.set_ylabel('Y (m)', fontsize=18, labelpad=15)
-    ax.set_zlabel('Z (m)', fontsize=18, labelpad=15)
-    ax.tick_params(axis='x', labelsize=16)
-    ax.tick_params(axis='y', labelsize=16)
-    ax.tick_params(axis='z', labelsize=14)
+    ax.set_xlabel('X (m)', fontsize=24, labelpad=25)
+    ax.set_ylabel('Y (m)', fontsize=24, labelpad=25)
+    ax.set_zlabel('Z (m)', fontsize=24, labelpad=25)
+    ax.tick_params(axis='x', labelsize=22)
+    ax.tick_params(axis='y', labelsize=22)
+    ax.tick_params(axis='z', labelsize=22, pad=10)
+    tick_spacing = 0.2
+    ax.set_xticks(np.arange(0, np.max(X) + tick_spacing, tick_spacing))
+    ax.set_yticks(np.arange(0, np.max(Y) + tick_spacing, tick_spacing))
     ax.grid(False)
 
     # title
-    ax.set_title("Terrain from CSV", fontsize=16)
+    # ax.set_title("Terrain from CSV", fontsize=16)
 
     # arrange z range
     ax.set_xlim(0, np.max(X))
@@ -50,6 +53,7 @@ def plot_terrain_from_csv(csv_file, save_filename="terran_from_csv.png"):
     ax.set_zlim(z_min, z_max)
     ticks = np.arange(-0.02, 0.02 + 0.02, 0.02)
     ax.set_zticks(ticks)
+    ax.set_zticks([-0.02, 0.02])
 
     # aspect ratio
     try:
