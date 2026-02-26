@@ -1,0 +1,38 @@
+{
+  "editor.tabSize": 2,
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "cSpell.words": [
+    "alnum",
+    "Axisd",
+    "Brawner",
+    "buildtool",
+    "cpplint",
+    "crba",
+    "dllexport",
+    "dllimport",
+    "Dont",
+    "eigen",
+    "GNUCXX",
+    "Gravito",
+    "Matsuura",
+    "namesapce",
+    "pointcloud",
+    "pseudoinverse",
+    "pycache",
+    "rclcpp",
+    "remappings",
+    "rviz",
+    "Ribeiro",
+    "Rodrigues",
+    "schematypens",
+    "slerp",
+    "tohoku",
+    "Vineet",
+    "Wextra",
+    "Wongphati",
+    "Wpedantic",
+    "Yudai"
+  ]
+}

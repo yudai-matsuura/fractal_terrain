@@ -95,4 +95,12 @@ private:
   // Variables
   cv::Mat terrain_base_;
   std::string csv_filename_;
+
+  // Constants
+  double kMinX_;
+  double kMaxX_;
+  double kMinY_;
+  double kMaxY_;
+  double kResolution_;
+  std::string kFrameId_;
 };

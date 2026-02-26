@@ -16,16 +16,22 @@ FractalTerrain::FractalTerrain(const rclcpp::NodeOptions & options)
     this->declare_parameter<std::string>("csv_filename", "fractal_terrain.csv");
 
     // Get parameter
-    int base_grid_size = this->get_parameter("base_grid_size").as_int();
-    double target_std = this->get_parameter("target_std").as_double();
+    int kBaseGridSize = this->get_parameter("base_grid_size").as_int();
+    double kTargetStd = this->get_parameter("target_std").as_double();
     double omega = this->get_parameter("fractal_omega").as_double();
     csv_filename_ = this->get_parameter("csv_filename").as_string();
+    kMinX_ = this->get_parameter("min_x").as_double();
+    kMaxX_ = this->get_parameter("max_x").as_double();
+    kMinY_ = this->get_parameter("min_y").as_double();
+    kMaxY_ = this->get_parameter("max_y").as_double();
+    kResolution_ = this->get_parameter("resolution").as_double();
+    std::string kFrameId_ = this->get_parameter("frame_id").as_string();
 
     // Publisher
     virtual_terrain_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("virtual_terrain", 10);
 
-    RCLCPP_INFO(this->get_logger(), "Generating Fractal Terrain (Omega: %.1f, STD: %.4f)...", omega, target_std);
-    terrain_base_ = generateFractalTerrain(base_grid_size, static_cast<float>(omega), static_cast<float>(target_std));
+    RCLCPP_INFO(this->get_logger(), "Generating Fractal Terrain (Omega: %.1f, STD: %.4f)...", omega, kTargetStd);
+    terrain_base_ = generateFractalTerrain(kBaseGridSize, static_cast<float>(omega), static_cast<float>(kTargetStd));
 
     // Save terrain as CSV
     saveTerrainAsCSV(
@@ -133,24 +139,16 @@ cv::Mat FractalTerrain::generateFractalTerrain(int size, float omega, float targ
 
 sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat & base_terrain)
 {
-  // Get parameters
-  double min_x = this->get_parameter("min_x").as_double();
-  double max_x = this->get_parameter("max_x").as_double();
-  double min_y = this->get_parameter("min_y").as_double();
-  double max_y = this->get_parameter("max_y").as_double();
-  double resolution = this->get_parameter("resolution").as_double();
-  std::string frame_id = this->get_parameter("frame_id").as_string();
-
   // Calculate the number of grid points
-  int num_x = static_cast<int>((max_x - min_x) / resolution) + 1;
-  int num_y = static_cast<int>((max_y - min_y) / resolution) + 1;
+  int num_x = static_cast<int>((kMaxX_ - kMinX_) / kResolution_) + 1;
+  int num_y = static_cast<int>((kMaxY_ - kMinY_) / kResolution_) + 1;
 
   if (num_x <= 0 || num_y <= 0) {
     return sensor_msgs::msg::PointCloud2();
   }
 
-  std::vector<double> x_vec = linspace(min_x, max_x, num_x);
-  std::vector<double> y_vec = linspace(min_y, max_y, num_y);
+  std::vector<double> x_vec = linspace(kMinX_, kMaxX_, num_x);
+  std::vector<double> y_vec = linspace(kMinY_, kMaxY_, num_y);
 
   //Resize fractal terrain
   cv::Mat resized_terrain;
@@ -159,7 +157,7 @@ sensor_msgs::msg::PointCloud2 FractalTerrain::createPointCloudMsg(const cv::Mat 
   // Initialize point cloud message
   sensor_msgs::msg::PointCloud2 msg;
   msg.header.stamp = this->now();
-  msg.header.frame_id = frame_id;
+  msg.header.frame_id = kFrameId_;
   msg.height = 1;
   msg.width = num_x * num_y;
   msg.is_dense = true;
